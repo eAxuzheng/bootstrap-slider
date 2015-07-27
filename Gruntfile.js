@@ -1,10 +1,14 @@
 /*global module:false*/
 module.exports = function(grunt) {
 
+  var packageJSON = grunt.file.readJSON('package.json');
+  var bumpFiles = ["package.json", "bower.json", "composer.json"];
+  var commitFiles = bumpFiles.concat(["./dist/*"]);
+
   // Project configuration.
   grunt.initConfig({
     // Metadata.
-    pkg: grunt.file.readJSON('package.json'),
+    pkg: packageJSON,
     header: {
       dist: {
         options: {
@@ -51,7 +55,9 @@ module.exports = function(grunt) {
           $ : true,
           Modernizr : true,
           console: true,
-          define: true
+          define: true,
+          module: true,
+          require: true
         },
         "-W099": true,
       },
@@ -67,7 +73,9 @@ module.exports = function(grunt) {
           globals : {
             document: true,
             console: false,
+            Slider: false,
             $: false,
+            jQuery: false,
             _: false,
             _V_: false,
             afterEach: false,
@@ -136,7 +144,7 @@ module.exports = function(grunt) {
         tasks: ['jshint:spec', 'jasmine:src']
       },
       css : {
-        files: '<%= pkg.gruntConfig.less.slider %>',
+        files: ['<%= pkg.gruntConfig.less.slider %>', '<%= pkg.gruntConfig.less.rules %>', '<%= pkg.gruntConfig.less.variables %>'],
         tasks: ['less:development']
       },
       index : {
@@ -179,7 +187,24 @@ module.exports = function(grunt) {
         }
       }
     },
-    clean: ["temp"]
+    clean: {
+      dist: ["dist"],
+      temp: ["temp"]
+    },
+    bump: {
+      options: {
+        files: bumpFiles,
+        updateConfigs: [],
+        commit: true,
+        commitMessage: 'Release v%VERSION%',
+        commitFiles: commitFiles,
+        createTag: true,
+        tagName: 'v%VERSION%',
+        tagMessage: 'Version %VERSION%',
+        push: false,
+        pushTo: 'origin'
+      }
+    }
   });
 
 
@@ -194,13 +219,14 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-open');
   grunt.loadNpmTasks('grunt-template');
   grunt.loadNpmTasks('grunt-header');
+  grunt.loadNpmTasks('grunt-bump');
 
   // Create custom tasks
   grunt.registerTask('test', ['jshint', 'jasmine']);
   grunt.registerTask('build', ['less:development', 'test', 'template']);
   grunt.registerTask('development', ['template', 'connect', 'open:development', 'watch']);
-  grunt.registerTask('append-header', ['header', 'clean']);
-  grunt.registerTask('production', ['less:production', 'less:production-min', 'test', 'uglify', 'append-header']);
+  grunt.registerTask('append-header', ['header', 'clean:temp']);
+  grunt.registerTask('production', ['less:production', 'less:production-min', 'test', 'uglify', "clean:dist", 'append-header']);
   grunt.registerTask('dev', 'development');
   grunt.registerTask('prod', 'production');
   grunt.registerTask('dist', 'production');

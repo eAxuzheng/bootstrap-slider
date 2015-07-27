@@ -58,7 +58,7 @@ describe("Public Method Tests", function() {
         precision: 2
       });
       testSlider.slider('setValue', 8.115);
-      
+
       var sliderValue = testSlider.slider('getValue');
       expect(sliderValue).toBe(8.12);
     });
@@ -69,7 +69,7 @@ describe("Public Method Tests", function() {
       testSlider = $("#testSlider1").slider({
         orientation : orientationVal
       });
-      
+
       var orientationClassApplied = $("#testSlider1").siblings("div.slider").hasClass("slider-vertical");
       expect(orientationClassApplied).toBeTruthy();
     });
@@ -105,7 +105,7 @@ describe("Public Method Tests", function() {
       testSlider = $("#testSlider1").slider({
         handle : handleVal
       });
-      
+
       var handleIsSetToTriangle = $("#testSlider1").siblings(".slider").children("div.slider-track").children("div.slider-handle").hasClass("triangle");
       expect(handleIsSetToTriangle).toBeTruthy();
     });
@@ -118,24 +118,24 @@ describe("Public Method Tests", function() {
         reversed : reversedVal
       });
       testSlider.slider('setValue', maxSliderVal);
-      
+
       var sliderSelectionHeightAtMaxValue = $("#testSlider1").siblings(".slider").children("div.slider-track").children("div.slider-selection").width();
       expect(sliderSelectionHeightAtMaxValue).toBe(0);
     });
 
     /* TODO: Fix this test! It keeps throwing a weird bug where is says '955' instead of '9' for the value */
     // it("reads and sets the 'formatter' option properly", function() {
-    //   var tooltipFormater = function(value) {
+    //   var tooltipFormatter = function(value) {
     //     return 'Current value: ' + value;
     //   };
 
     //   testSlider = $("#testSlider1").slider({
-    //     formatter : tooltipFormater
+    //     formatter : tooltipFormatter
     //   });
     //   testSlider.slider('setValue', 9);
 
     //   var tooltipMessage = $("#testSlider1").siblings(".slider").find("div.tooltip").children("div.tooltip-inner").text();
-    //   var expectedMessage = tooltipFormater(9);
+    //   var expectedMessage = tooltipFormatter(9);
     //   expect(tooltipMessage).toBe(expectedMessage);
     // });
 
@@ -152,7 +152,7 @@ describe("Public Method Tests", function() {
         testSlider = $("#testSlider1").slider({
           tooltip : "hide"
         });
-        
+
         var tooltipIsHidden = testSlider.siblings(".slider").children("div.tooltip").hasClass("hide");
         expect(tooltipIsHidden).toBeTruthy();
       });
@@ -164,7 +164,7 @@ describe("Public Method Tests", function() {
 
         var tooltipIsHidden = !($("#testSlider1").siblings(".slider").children("div.tooltip").hasClass("in"));
         expect(tooltipIsHidden).toBeTruthy();
-        
+
         // Trigger hover
         var mouseenterEvent = document.createEvent("Events");
         mouseenterEvent.initEvent("mouseenter", true, true);
@@ -178,7 +178,7 @@ describe("Public Method Tests", function() {
         testSlider = $("#testSlider1").slider({
           tooltip : "always"
         });
-        
+
         var tooltipIsShown = $("#testSlider1").siblings(".slider").children("div.tooltip").hasClass("in");
         expect(tooltipIsShown).toBeTruthy();
       });
@@ -196,7 +196,7 @@ describe("Public Method Tests", function() {
         mouseenterEvent.initEvent("mouseenter", true, true);
         testSlider.data('slider').sliderElem.dispatchEvent(mouseenterEvent);
 
-        
+
         var tooltipIsShownOnHover = $("#testSlider1").siblings(".slider").children("div.tooltip").hasClass("in");
         expect(tooltipIsShownOnHover).toBeTruthy();
       });
@@ -223,7 +223,7 @@ describe("Public Method Tests", function() {
       it("if a value passed in is greater than the max (10), the slider only goes to the max", function() {
         var maxValue = 10,
             higherThanSliderMaxVal = maxValue + 5;
-      
+
         testSlider.slider('setValue', higherThanSliderMaxVal);
 
         var sliderValue = testSlider.slider('getValue');
@@ -233,16 +233,36 @@ describe("Public Method Tests", function() {
       it("if a value passed in is less than the min (0), the slider only goes to the min", function() {
         var minValue = 0,
             lowerThanSliderMaxVal = minValue - 5;
-      
+
         testSlider.slider('setValue', lowerThanSliderMaxVal);
 
         var sliderValue = testSlider.slider('getValue');
         expect(sliderValue).toBe(minValue);
       });
 
+      it("sets the 'value' property of the slider <input> element", function() {
+        var value = 9;
+        testSlider.slider('setValue', value);
+
+        var currentValue = document.querySelector("#testSlider1").value;
+        currentValue = parseFloat(currentValue);
+
+        expect(currentValue).toBe(value);
+      });
+
+       it("sets the 'value' attribute of the slider <input> element", function() {
+        var value = 9;
+        testSlider.slider('setValue', value);
+
+        var currentValue = document.querySelector("#testSlider1").getAttribute("value");
+        currentValue = parseFloat(currentValue);
+
+        expect(currentValue).toBe(value);
+      });
+
       describe("when an invalid value type is passed in", function() {
         var invalidValue;
-        
+
         beforeEach(function() {
           invalidValue = "a";
         });
@@ -283,14 +303,14 @@ describe("Public Method Tests", function() {
 
         it("first value is capped to min", function() {
           testSlider.slider('setValue', [minValue, otherValue]);
-          
+
           var sliderValues = testSlider.slider('getValue');
           expect(sliderValues[0]).toBe(0);
         });
 
         it("second value is capped to min", function() {
           testSlider.slider('setValue', [otherValue, minValue]);
-          
+
           var sliderValues = testSlider.slider('getValue');
           expect(sliderValues[1]).toBe(0);
         });
@@ -302,14 +322,14 @@ describe("Public Method Tests", function() {
 
         it("first value is capped to max", function() {
           testSlider.slider('setValue', [maxValue, otherValue]);
-          
+
           var sliderValues = testSlider.slider('getValue');
           expect(sliderValues[0]).toBe(10);
         });
 
         it("second value is capped to max", function() {
           testSlider.slider('setValue', [otherValue, maxValue]);
-          
+
           var sliderValues = testSlider.slider('getValue');
           expect(sliderValues[1]).toBe(10);
         });
@@ -333,19 +353,66 @@ describe("Public Method Tests", function() {
         });
       });
     });
-    
-    it("if second argument is true, the 'slide' event is triggered", function() {
-      var testSlider = $("#testSlider1").slider({
-        value : 3
+
+    describe("triggerSlideEvent argument", function() {
+      it("if triggerSlideEvent argument is true, the 'slide' event is triggered", function() {
+        var testSlider = $("#testSlider1").slider({
+          value : 3
+        });
+  
+          var newSliderVal = 5;
+  
+          testSlider.on('slide', function(evt) {
+            expect(newSliderVal).toEqual(evt.value);
+          });
+  
+        testSlider.slider('setValue', newSliderVal, true);
       });
 
-      var newSliderVal = 5;
+      it("if triggerSlideEvent argument is false, the 'slide' event is not triggered", function() {
+        var newSliderVal = 5;
+        var slideEventTriggered = false; 
+        var testSlider = $("#testSlider1").slider({
+          value : 3
+        });
+  
+        testSlider.on('slide', function() {
+          slideEventTriggered = true;
+        });
+        testSlider.slider('setValue', newSliderVal, false);
 
-      testSlider.on('slide', function(evt) {
-        expect(newSliderVal).toEqual(evt.value);
+        expect(slideEventTriggered).toEqual(false);
+      });
+    });
+
+    describe("triggerChangeEvent argument", function() {
+      it("if triggerChangeEvent argument is true, the 'change' event is triggered", function() {
+        var testSlider = $("#testSlider1").slider({
+          value : 3
+        });
+  
+        var newSliderVal = 5;
+
+        testSlider.on('change', function(evt) {
+          expect(newSliderVal).toEqual(evt.value.newValue);
+        });
+  
+        testSlider.slider('setValue', newSliderVal, true);
       });
 
-      testSlider.slider('setValue', newSliderVal, true);
+      it("if triggerChangeEvent argument is false, the 'change' event is not triggered", function() {
+        var changeEventTriggered = false; 
+        var testSlider = $("#testSlider1").slider({
+          value : 3
+        });
+  
+        testSlider.on('change', function() {
+          changeEventTriggered = true;
+        });
+        testSlider.slider('setValue', 5, false);
+
+        expect(changeEventTriggered).toEqual(false);
+      });
     });
 
   });
@@ -375,7 +442,7 @@ describe("Public Method Tests", function() {
 
         var sliderParentElement = $("#testSlider1").parent('div.slider').length,
             sliderChildrenElements = $("#testSlider1").siblings('div.slider-track, div.tooltip').length;
-        
+
         expect(sliderParentElement).toBe(0);
         expect(sliderChildrenElements).toBe(0);
       });
@@ -478,11 +545,11 @@ describe("Public Method Tests", function() {
         id: "enabled",
         enabled: true
       });
-      
+
       var isEnabled = testSlider.slider("isEnabled");
       var $slider = testSlider.siblings("#enabled");
       var hasDisabledClass = $slider.hasClass("slider") && $slider.hasClass("#enabled");
-      
+
       expect(isEnabled).toBeTruthy();
       expect(hasDisabledClass).not.toBeTruthy();
     });
@@ -525,13 +592,36 @@ describe("Public Method Tests", function() {
 
     var $slider = $("#changeOrientationSliderElem");
     var orientationClassApplied = $slider.hasClass("slider-vertical");
-    
+
     expect(orientationClassApplied).toBeTruthy();
+  });
+
+  it("relayout: if slider is not displayed on initialization and then displayed later on, relayout() will re-adjust the margin-left of the tooltip", function() {
+    // Setup
+    testSlider = new Slider("#relayoutSliderInput", {
+      id: "relayoutSlider",
+      min: 0,
+      max: 10,
+      value: 5
+    });
+    var mainTooltipDOMRef = document.querySelector("#relayoutSlider .tooltip-main");
+    var relayoutSliderContainerDOMRef = document.querySelector("#relayoutSliderContainer");
+    var tooltipMarginLeft;
+    // Main tooltip margin-left offset should be 0 on slider intialization
+    tooltipMarginLeft = parseFloat(mainTooltipDOMRef.style.marginLeft);
+    expect(tooltipMarginLeft).toBe(0);
+    // Show slider and call relayout()
+    relayoutSliderContainerDOMRef.style.display = "block";
+    testSlider.relayout();
+    // Main tooltip margin-left offset should re-adjust to be > 0
+    tooltipMarginLeft = Math.abs( parseFloat(mainTooltipDOMRef.style.marginLeft) );
+    expect(tooltipMarginLeft).toBeGreaterThan(0);
   });
 
   afterEach(function() {
     if(testSlider) {
-      testSlider.slider('destroy');
+      if(testSlider instanceof jQuery) { testSlider.slider('destroy'); }
+      if(testSlider instanceof Slider) { testSlider.destroy(); }
       testSlider = null;
     }
   });
